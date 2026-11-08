@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>แฟลชการ์ด ทายทันมิจฉาชีพ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f4f1ea; --ink:#1d2a33; --card:#ffffff;
+    --scam:#c62828; --safe:#2e7d32; --main:#1565c0;
+    --fs:1;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:'Noto Sans Thai',sans-serif;
+    background:var(--bg); color:var(--ink);
+    font-size:calc(20px * var(--fs));
+  }
+  header{
+    background:var(--main); color:#fff; padding:16px 20px;
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;
+  }
+  header h1{margin:0; font-size:1.4em; font-weight:800}
+  .fs-btns button{
+    font-family:inherit; font-size:1em; font-weight:600;
+    padding:8px 14px; margin-left:6px; border-radius:10px;
+    border:2px solid #fff; background:transparent; color:#fff; cursor:pointer;
+  }
+  .fs-btns button:hover{background:#fff; color:var(--main)}
+  main{max-width:900px; margin:0 auto; padding:18px}
+
+  /* Dashboard */
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:14px}
+  .stat{background:var(--card); border-radius:16px; padding:12px 8px; text-align:center; box-shadow:0 2px 6px rgba(0,0,0,.1)}
+  .stat .label{font-size:.7em; color:#5b6770}
+  .stat .value{font-size:1.7em; font-weight:800}
+  .progress{height:18px; background:#d9d5cb; border-radius:20px; overflow:hidden; margin-bottom:18px}
+  .progress div{height:100%; width:0; background:var(--main); transition:width .4s}
+
+  /* Flashcard */
+  .scene{perspective:1200px}
+  .card{
+    position:relative; min-height:330px;
+    transform-style:preserve-3d; transition:transform .6s;
+  }
+  .card.flipped{transform:rotateY(180deg)}
+  .face{
+    position:absolute; inset:0; backface-visibility:hidden;
+    background:var(--card); border-radius:22px; padding:24px;
+    box-shadow:0 4px 14px rgba(0,0,0,.18);
+    display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;
+  }
+  .front .tag{font-size:.7em; color:#5b6770; margin-bottom:10px}
+  .front .sentence{font-size:1.45em; font-weight:600; line-height:1.6}
+  .back{transform:rotateY(180deg); overflow:auto}
+  .back.scam{border:8px solid var(--scam)}
+  .back.safe{border:8px solid var(--safe)}
+  .verdict{font-size:1.6em; font-weight:800; margin-bottom:6px}
+  .scam .verdict{color:var(--scam)} .safe .verdict{color:var(--safe)}
+  .result-mark{font-size:1.1em; font-weight:600; margin-bottom:10px}
+  .why{line-height:1.6; margin:4px 0}
+  .tip{margin-top:10px; background:#fff6d6; border-radius:12px; padding:10px 14px; font-weight:600; font-size:.9em}
+
+  /* Buttons */
+  .answers{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:18px}
+  .btn{
+    font-family:inherit; font-size:1.15em; font-weight:800; color:#fff;
+    padding:20px 10px; border:none; border-radius:18px; cursor:pointer;
+    box-shadow:0 4px 0 rgba(0,0,0,.25);
+  }
+  .btn:active{transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,.25)}
+  .btn.scam{background:var(--scam)} .btn.safe{background:var(--safe)}
+  .btn.next{background:var(--main); grid-column:1/-1}
+  .btn:disabled{opacity:.4; cursor:not-allowed}
+  .hidden{display:none !important}
+
+  /* Summary */
+  .summary{background:var(--card); border-radius:22px; padding:26px; box-shadow:0 4px 14px rgba(0,0,0,.18); text-align:center}
+  .summary .big{font-size:3em; font-weight:800; color:var(--main)}
+  .summary h2{margin:6px 0}
+  .review{text-align:left; margin-top:16px}
+  .review div{padding:10px 12px; border-radius:12px; margin-bottom:8px; font-size:.85em; line-height:1.5}
+  .review .ok{background:#e4f3e5} .review .no{background:#fde7e7}
+
+  @media(max-width:600px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .card{min-height:400px}
+    .answers{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🛡️ ทายทัน มิจฉาชีพ</h1>
+  <div class="fs-btns">
+    ขนาดตัวอักษร
+    <button onclick="setFs(-0.1)">ก−</button>
+    <button onclick="setFs(0.1)">ก+</button>
+  </div>
+</header>
+
+<main>
+  <!-- Dashboard -->
+  <section class="stats" id="stats">
+    <div class="stat"><div class="label">ข้อที่</div><div class="value" id="sNo">1/10</div></div>
+    <div class="stat"><div class="label">คะแนน</div><div class="value" id="sScore" style="color:var(--safe)">0</div></div>
+    <div class="stat"><div class="label">ถูกติดกัน 🔥</div><div class="value" id="sStreak">0</div></div>
+    <div class="stat"><div class="label">ความแม่นยำ</div><div class="value" id="sAcc">-</div></div>
+  </section>
+  <div class="progress" id="prog"><div id="bar"></div></div>
+
+  <!-- Game -->
+  <section id="game">
+    <div class="scene">
+      <div class="card" id="card">
+        <div class="face front">
+          <div class="tag">📞 ถ้ามีคนโทรมาพูดแบบนี้...</div>
+          <div class="sentence" id="sentence"></div>
+        </div>
+        <div class="face back" id="back">
+          <div class="verdict" id="verdict"></div>
+          <div class="result-mark" id="resultMark"></div>
+          <div class="why" id="why"></div>
+          <div class="tip" id="tip"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="answers">
+      <button class="btn scam" id="btnScam" onclick="answer(true)">🚨 มิจฉาชีพ</button>
+      <button class="btn safe" id="btnSafe" onclick="answer(false)">✅ ไม่ใช่มิจฉาชีพ</button>
+      <button class="btn next hidden" id="btnNext" onclick="next()">ข้อต่อไป ▶</button>
+    </div>
+  </section>
+
+  <!-- Summary -->
+  <section id="summary" class="summary hidden">
+    <div>ผลการทายของคุณ</div>
+    <div class="big" id="finalScore"></div>
+    <h2 id="finalMsg"></h2>
+    <div class="review" id="review"></div>
+    <div class="answers"><button class="btn next" onclick="start()">🔄 เล่นอีกครั้ง</button></div>
+  </section>
+</main>
+
+<script>
+const DATA = [
+  {t:"สวัสดีค่ะ ดิฉันโทรจากกรมสรรพากร คุณมียอดภาษีค้างชำระ ถ้าไม่โอนเงินวันนี้จะถูกอายัดบัญชีนะคะ",
+   scam:true, why:"หน่วยงานราชการไม่เคยโทรมาขู่ให้โอนเงินทันที และไม่อายัดบัญชีทางโทรศัพท์",
+   tip:"วางสายก่อน แล้วโทรสอบถามเบอร์ทางการของหน่วยงานนั้นเอง"},
+  {t:"เพื่อความปลอดภัย กรุณาอย่าบอกรหัส OTP ให้ใคร แม้แต่เจ้าหน้าที่ธนาคาร",
+   scam:false, why:"นี่คือข้อความเตือนที่ธนาคารส่งมาจริง ๆ ไม่ได้ขอให้ทำอะไรเลย และเตือนให้ระวังด้วย",
+   tip:"รหัส OTP คือกุญแจบัญชีของเรา ห้ามบอกใครทั้งนั้น"},
+  {t:"พัสดุของคุณถูกตรวจพบสิ่งผิดกฎหมาย ดิฉันจะโอนสายให้เจ้าหน้าที่ตำรวจ กรุณาอยู่ในสายห้ามวางนะคะ",
+   scam:true, why:"มิจฉาชีพมักอ้างพัสดุผิดกฎหมาย แล้วโอนสายไปแก๊งที่แอบอ้างเป็นตำรวจเพื่อให้กลัว",
+   tip:"ตำรวจจริงไม่สั่งให้อยู่ในสายและไม่ให้โอนเงินเพื่อพิสูจน์ตัวเอง"},
+  {t:"สวัสดีครับ โรงพยาบาลแจ้งนัดตรวจเดือนหน้า วันที่ 15 เวลา 9 โมง ถ้าไม่สะดวกโทรกลับเบอร์โรงพยาบาลได้เลยครับ",
+   scam:false, why:"เป็นการแจ้งนัดตามปกติ ไม่ขอเงิน ไม่ขอรหัส ไม่เร่งรัด และให้โทรกลับเบอร์ทางการได้",
+   tip:"ถ้าไม่แน่ใจ โทรสอบถามโรงพยาบาลจากเบอร์ในสมุดนัดหรือบัตรประจำตัวผู้ป่วย"},
+  {t:"ยินดีด้วย! คุณได้รับรางวัลที่ 1 มูลค่า 500,000 บาท กรุณาโอนค่าธรรมเนียมรับรางวัล 3,000 บาทก่อนนะคะ",
+   scam:true, why:"ของรางวัลจริงไม่ต้องจ่ายเงินก่อน ยิ่งไม่ได้ร่วมสนุกที่ไหน ยิ่งเป็นไปไม่ได้",
+   tip:"ได้รางวัลแต่ต้องโอนเงินก่อน = หลอกแน่นอน"},
+  {t:"แม่ครับ ผมเปลี่ยนเบอร์ใหม่ ตอนนี้มีเรื่องด่วนมาก ขอยืมเงินโอนให้หน่อย อย่าบอกใครนะ",
+   scam:true, why:"มิจฉาชีพแอบอ้างเป็นลูกหลาน ใช้ความรักและความตกใจ แล้วห้ามบอกคนอื่น",
+   tip:"โทรกลับเบอร์เดิมของลูกหลาน หรือถามคนในครอบครัวก่อนโอนเสมอ"},
+  {t:"ไรเดอร์ครับ ผมอยู่หน้าบ้านแล้ว อาหารที่คุณสั่งในแอปมาส่งแล้วครับ (และคุณสั่งอาหารไว้จริง)",
+   scam:false, why:"เมื่อเราสั่งไว้จริงและตรงกับรายการในแอป การโทรมาแจ้งของไรเดอร์ถือเป็นเรื่องปกติ",
+   tip:"แต่ถ้าไม่ได้สั่ง แล้วขอให้โอนเงินหรือกดลิงก์ ให้ระวัง!"},
+  {t:"ธนาคารพบว่าบัญชีคุณมีความเสี่ยง กรุณาโอนเงินไปยังบัญชีปลอดภัยชั่วคราวก่อน เดี๋ยวเราจะโอนคืนให้",
+   scam:true, why:"ธนาคารไม่เคยให้ลูกค้าโอนเงินไปบัญชีอื่นเพื่อความปลอดภัย",
+   tip:"ถ้ามีคนบอกให้ย้ายเงิน ให้วางสายแล้วโทรเบอร์หลังบัตรของธนาคาร"},
+  {t:"คุณมีสิทธิ์รับเงินคืนภาษี กรุณากดลิงก์ในข้อความ แล้วกรอกเลขบัตรประชาชนและรหัสผ่านแอปธนาคาร",
+   scam:true, why:"ลิงก์ปลอมจะขโมยข้อมูลของเรา การคืนภาษีจริงไม่ต้องกรอกรหัสผ่านแอปธนาคาร",
+   tip:"อย่ากดลิงก์จากข้อความแปลกหน้า ใช้แอปหรือเว็บทางการเท่านั้น"},
+  {t:"การไฟฟ้าแจ้งว่าบิลค่าไฟเดือนนี้ 850 บาท ชำระได้ที่เคาน์เตอร์ ธนาคาร ร้านสะดวกซื้อ หรือแอปทางการ",
+   scam:false, why:"แจ้งยอดตามปกติ ไม่ได้ขู่ตัดไฟ ไม่ได้ให้โอนเข้าบัญชีบุคคล และมีช่องทางชำระหลายทาง",
+   tip:"จ่ายผ่านช่องทางทางการเท่านั้น ไม่โอนเข้าบัญชีส่วนตัว"}
+];
+
+let deck=[], idx=0, score=0, streak=0, answered=false, history=[];
+
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const $=id=>document.getElementById(id);
+
+function start(){
+  deck=shuffle(DATA); idx=0; score=0; streak=0; history=[];
+  $('game').classList.remove('hidden'); $('summary').classList.add('hidden');
+  $('stats').classList.remove('hidden'); $('prog').classList.remove('hidden');
+  load();
+}
+function load(){
+  answered=false;
+  const c=deck[idx];
+  $('card').classList.remove('flipped');
+  $('sentence').textContent="“"+c.t+"”";
+  $('btnScam').disabled=false; $('btnSafe').disabled=false;
+  $('btnScam').classList.remove('hidden'); $('btnSafe').classList.remove('hidden');
+  $('btnNext').classList.add('hidden');
+  updateStats();
+}
+function answer(guessScam){
+  if(answered) return; answered=true;
+  const c=deck[idx], correct=(guessScam===c.scam);
+  if(correct){score++; streak++} else streak=0;
+  history.push({t:c.t, correct, scam:c.scam});
+  const back=$('back');
+  back.className='face back '+(c.scam?'scam':'safe');
+  $('verdict').textContent=c.scam?'🚨 นี่คือมิจฉาชีพ!':'✅ ไม่ใช่มิจฉาชีพ';
+  $('resultMark').textContent=correct?'🎉 คุณตอบถูก!':'😅 ตอบผิด ไม่เป็นไร จำไว้นะ';
+  $('resultMark').style.color=correct?'var(--safe)':'var(--scam)';
+  $('why').textContent=c.why;
+  $('tip').textContent='💡 '+c.tip;
+  $('card').classList.add('flipped');
+  $('btnScam').classList.add('hidden'); $('btnSafe').classList.add('hidden');
+  $('btnNext').classList.remove('hidden');
+  $('btnNext').textContent = idx===deck.length-1 ? '🏁 ดูผลคะแนน' : 'ข้อต่อไป ▶';
+  updateStats(true);
+}
+function next(){
+  if(idx===deck.length-1){finish();return}
+  idx++; load();
+}
+function updateStats(done){
+  const n=idx+1, total=deck.length, answeredCount=history.length;
+  $('sNo').textContent=n+'/'+total;
+  $('sScore').textContent=score;
+  $('sStreak').textContent=streak;
+  $('sAcc').textContent=answeredCount?Math.round(score/answeredCount*100)+'%':'-';
+  $('bar').style.width=(answeredCount/total*100)+'%';
+}
+function finish(){
+  $('game').classList.add('hidden'); $('summary').classList.remove('hidden');
+  $('finalScore').textContent=score+' / '+deck.length;
+  const msg = score>=9?'🏆 เก่งมาก! คุณรู้ทันมิจฉาชีพ'
+            : score>=7?'👍 ดีมาก! ระวังอีกนิดก็สมบูรณ์แบบ'
+            : score>=5?'🙂 พอใช้ ลองทบทวนข้อที่พลาดดูนะ'
+            : '📚 ลองเล่นอีกรอบ แล้วจำสัญญาณอันตรายไว้';
+  $('finalMsg').textContent=msg;
+  $('review').innerHTML='<b>ทบทวนทุกข้อ</b>'+history.map((h,i)=>
+    `<div class="${h.correct?'ok':'no'}">${h.correct?'✔':'✘'} ข้อ ${i+1}: ${h.t}<br><b>${h.scam?'🚨 มิจฉาชีพ':'✅ ไม่ใช่มิจฉาชีพ'}</b></div>`).join('')
+    +`<div style="background:#fff6d6"><b>🔑 จำง่าย ๆ 4 ข้อ:</b><br>1) เร่งรีบ ขู่ให้กลัว<br>2) ให้โอนเงิน/บอก OTP/รหัสผ่าน<br>3) ห้ามบอกใคร<br>4) ให้กดลิงก์แปลก ๆ<br>→ <b>วางสาย แล้วโทรเช็กเบอร์ทางการ</b> • สายด่วน ตำรวจ 191 / ศูนย์ AOC 1441</div>`;
+  $('bar').style.width='100%';
+}
+function setFs(d){
+  const cur=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fs'))||1;
+  document.documentElement.style.setProperty('--fs',Math.min(1.5,Math.max(.8,cur+d)));
+}
+start();
+</script>
+</body>
+</html>
